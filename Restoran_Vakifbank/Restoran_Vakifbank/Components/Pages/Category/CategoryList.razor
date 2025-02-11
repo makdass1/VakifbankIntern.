@@ -1,0 +1,11 @@
+﻿@page "/Category"
+@if (IsProcessing)
+{
+    <div class="position-absolute w-75 h-75 d-flex felx-column align-item-center bg-white justify-content-center">
+        <img  src="~/lib/images/loading.gif" alt="loading"/>    
+    </div>
+}
+
+@code {
+    public bool IsProcessing { get; set; } = true;
+}
