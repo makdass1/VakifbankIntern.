@@ -12,11 +12,11 @@
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.1" />
+    <PackageReference Include="NToastNotify" Version="8.0.0" />
+    <PackageReference Include="toastr" Version="2.1.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Services\Extensions\" />
-    <Folder Include="Services\" />
     <Folder Include="ViewModels\" />
   </ItemGroup>
 

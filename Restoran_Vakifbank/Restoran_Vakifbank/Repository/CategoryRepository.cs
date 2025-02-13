@@ -31,7 +31,7 @@ namespace Restoran_Vakifbank.Repository
         public async Task<Category> GetAsync(int id)
         {
             var obj =await _db.Category.FirstOrDefaultAsync(u => u.Id == id);
-            if(obj != null)
+            if(obj == null)
             {
 
                 return new Category();
