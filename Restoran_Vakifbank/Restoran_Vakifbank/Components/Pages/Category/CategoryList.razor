@@ -1,6 +1,8 @@
 ﻿@page "/Category"
 @inject ICategoryRepository _categoryRepository
+@inject IJSRuntime _JS   
 
+<BsModal OnModalConfirmation="ConfirmDelete_Click" ButtonBootstrapStyle="btn-danger" ButtonText="Delete" Title="Kategoriyi silmek istediğinize emin misiniz ?"></BsModal>
 @if (IsProcessing)
 {
     <div class="vh-100  w-30 h-30 d-flex flex-column align-items-center justify-content-center">
@@ -23,7 +25,7 @@ else
                 <div class="col-12 text-end">
                     <a href="/category/create" class="btn btn-lg btn-secondary " style="width:250px">
                         <i class="bi bi-plus-circle"></i>  Yeni kategori ekle
-                        </a>
+                    </a>
                 </div>
             </div>
             @if(categories.Any())
@@ -50,7 +52,7 @@ else
                                     <a href="@($"/category/update/{obj.Id}")" class="btn btn-primary">
                                         <i class="bi bi-pencil-square"></i> Düzenle
                                     </a>
-                                    <button class="btn btn-danger">
+                                    <button class="btn btn-danger" @onclick="()=>HandleDelete(obj.Id)">
                                         <i class="bi bi-trash-fill"></i> Delete
                                     </button>
                                 </td>
@@ -67,22 +69,46 @@ else
 @code {
     private bool IsProcessing { get; set; } = true;
     private IEnumerable<Category> categories { get; set; } = new List<Category>();
+    private int DeleteCategoryID { get; set; } = 0;
+
     // protected override async Task OnInitializedAsync()
     // {
-        
+
     // }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if(firstRender){
-             await LoadCategories();          
+            await LoadCategories();          
             IsProcessing = false;
             StateHasChanged();
-           
+
         }
-       // return base.OnAfterRenderAsync(firstRender);
+        // return base.OnAfterRenderAsync(firstRender);
     }
     private async Task LoadCategories(){
 
         categories = await _categoryRepository.GetAllAsync();
+    }
+
+    private void HandleDelete(int id)
+    {
+        DeleteCategoryID= id;
+        _JS.InvokeVoidAsync("ShowConfirmationModal");
+    }
+    private async Task ConfirmDelete_Click(bool isConfirmed){
+        IsProcessing = true;
+        await _JS.InvokeVoidAsync("HideConfirmationModal");
+        if(isConfirmed && DeleteCategoryID !=0 )
+        {
+            var result =await _categoryRepository.DeleteAsync(DeleteCategoryID);
+            if (result)
+                _JS?.ToastrSuccess("Kategori silme işlemi başarılı");
+            else
+                _JS?.ToastrError("Kayıt silme işlemi başarısız");
+
+            await LoadCategories();
+        }
+        DeleteCategoryID = 0;
+        IsProcessing = false;
     }
 }
