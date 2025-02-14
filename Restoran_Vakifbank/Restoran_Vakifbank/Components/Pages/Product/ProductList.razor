@@ -1,0 +1,129 @@
+﻿@page "/Product"
+@inject IProductRepository _productRepository
+@inject IJSRuntime _JS   
+
+<BsModal OnModalConfirmation="ConfirmDelete_Click" ButtonBootstrapStyle="btn-danger" ButtonText="Delete" Title="Ürünü silmek istediğinize emin misiniz ?"></BsModal>
+@if (IsProcessing)
+{
+    <div class="vh-100  w-30 h-30 d-flex flex-column align-items-center justify-content-center">
+        <img src="/lib/bootstrap/images/loading.gif" alt="loading" />
+    </div>
+}
+else 
+{
+    <div class="card shadow border-0 mt-4">
+        <div class="card-header bg-black bg-gradient m-lg-0 py-3"> 
+            <div class="row">
+                <div class="col-12 text-center">
+                    <h2 class="text-white py-2">Ürün Listesi</h2>
+                </div>
+            </div>
+
+        </div >
+        <div class="card-body p-4">
+            <div class="row pb-3">
+                <div class="col-12 text-end">
+                    <a href="/product/create" class="btn btn-lg btn-secondary " style="width:250px">
+                        <i class="bi bi-plus-circle"></i>  Yeni Ürün ekle
+                    </a>
+                </div>
+            </div>
+            @if(products.Any())
+            {
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>
+                                resim
+                            </th>
+                            <th>
+                                Ürün Adı
+                            </th>
+                            <th>
+                                Fiyat (TL)
+                            </th>
+                            <th>
+                                Kategori
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach(var obj in products)
+                        {
+                            <tr>
+                                <td>
+                                    
+                                </td>
+                                <td>
+                                    @obj.Name
+                                </td>
+                                <td>
+                                    @obj.Price
+                                </td>
+                                <td>
+                                    @obj.Category.Name
+                                </td>
+                                <td>
+                                    <a href="@($"/Product/update/{obj.Id}")" class="btn btn-primary">
+                                        <i class="bi bi-pencil-square"></i> Düzenle
+                                    </a>
+                                    <button class="btn btn-danger" @onclick="()=>HandleDelete(obj.Id)">
+                                        <i class="bi bi-trash-fill"></i> Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+
+        </div>
+    </div>
+}
+
+@code {
+    private bool IsProcessing { get; set; } = true;
+    private IEnumerable<Product> products{ get; set; } = new List<Product>();
+    private int DeleteCategoryID { get; set; } = 0;
+
+    // protected override async Task OnInitializedAsync()
+    // {
+
+    // }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(firstRender){
+            await LoadCategories();          
+            IsProcessing = false;
+            StateHasChanged();
+
+        }
+        // return base.OnAfterRenderAsync(firstRender);
+    }
+    private async Task LoadCategories(){
+
+        products = await _productRepository.GetAllAsync();
+    }
+
+    private void HandleDelete(int id)
+    {
+        DeleteCategoryID= id;
+        _JS.InvokeVoidAsync("ShowConfirmationModal");
+    }
+    private async Task ConfirmDelete_Click(bool isConfirmed){
+        IsProcessing = true;
+        await _JS.InvokeVoidAsync("HideConfirmationModal");
+        if(isConfirmed && DeleteCategoryID !=0 )
+        {
+            var result = await _productRepository.DeleteAsync(DeleteCategoryID);
+            if (result)
+                _JS?.ToastrSuccess("Ürün silme işlemi başarılı");
+            else
+                _JS?.ToastrError("Ürün silme işlemi başarısız");
+
+            await LoadCategories();
+        }
+        DeleteCategoryID = 0;
+        IsProcessing = false;
+    }
+}
