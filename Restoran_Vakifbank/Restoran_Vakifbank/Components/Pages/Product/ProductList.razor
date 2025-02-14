@@ -33,15 +33,17 @@ else
                 <table class="table table-bordered table-striped">
                     <thead>
                         <tr>
-                            <th>
-                                resim
-                            </th>
+                           <th>
+                               
+                           </th>
+                           <th>resim</th>
                             <th>
                                 Ürün Adı
                             </th>
                             <th>
                                 Fiyat (TL)
                             </th>
+                            <th>Anahtar Kelime</th>
                             <th>
                                 Kategori
                             </th>
@@ -52,13 +54,24 @@ else
                         {
                             <tr>
                                 <td>
-                                    
+
+                                </td>
+                                <td>
+                                    <div class="col-1">
+
+
+                                        <img src="@obj.ImageUrl " alt="..." class="img-thumbnail" />
+                                    </div>
+                                         
                                 </td>
                                 <td>
                                     @obj.Name
                                 </td>
                                 <td>
                                     @obj.Price
+                                </td>
+                                <td>
+                                    <span class="badge text-bg-info">@obj.SpecialTag</span>
                                 </td>
                                 <td>
                                     @obj.Category.Name
