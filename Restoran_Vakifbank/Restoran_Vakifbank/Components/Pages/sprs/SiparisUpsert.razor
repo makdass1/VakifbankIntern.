@@ -25,17 +25,31 @@ else
         <div class="card-body p-4">
             <EditForm Model="Siparis" OnValidSubmit="UpsertSiparis">
                 <DataAnnotationsValidator />
-                <div class="border p-3 mt-4">
-                    <div class="form-floating py-3 col-12">
-                        <select multiple class="form-select" @onchange="OnProductSelected">
+                <div class="border p-6 mt-4">
+                    <div  class="form-floating py-6  w-100 p-25 col-25">
+                        <select multiple="true" class="form-select p-25 py-6" style="height: 300px; width: 100%;
+    font-size: 16px; 
+    padding: 10px; " @onchange="OnProductSelected">
                             @foreach (var product in _products)
                             {
                                 <option value="@product.Id" selected="@SelectedProductIds.Contains(product.Id)">
-                                    @product.Name
+                                    @product.Name <br /> @product.Price
                                 </option>
                             }
                         </select>
-                        <label for="Product">Ürün</label>
+                        <label for="Product"></label>
+                    </div>
+
+                    <div class="form-floating py-3 col-12">
+                        <InputNumber @bind-Value="Siparis.Masa_no"  class="form-control" id="Masa_no" placeholder="Masa numarası" />
+                        <label for="Masa_no">Masa numarası</label>
+                        <ValidationMessage For="@(() => Siparis.Masa_no)" />
+                    </div>
+
+                    <!-- Toplam Fiyatı Göster -->
+                    <div class="form-floating py-3 col-12">
+                        <input type="text" class="form-control" value="@TotalPrice.ToString("C")" readonly />
+                        <label for="TotalPrice">Toplam Fiyat</label>
                     </div>
 
                     <div class="row mt-3">
@@ -59,11 +73,12 @@ else
 @code {
     [Parameter]
     public int Id { get; set; }
-
+    private Product toplicam { get; set; } = new Product();
     private Siparis Siparis { get; set; } = new Siparis();
     private IEnumerable<Product> _products = new List<Product>();
     private List<int> SelectedProductIds { get; set; } = new List<int>();
     private bool IsProcessing { get; set; } = false;
+    private decimal TotalPrice { get; set; } = 0; // Toplam fiyat için değişken
 
     protected override async Task OnInitializedAsync()
     {
@@ -81,6 +96,7 @@ else
             if (Siparis.ProductIds != null)
             {
                 SelectedProductIds = new List<int>(Siparis.ProductIds);
+                CalculateTotalPrice(); // Toplam fiyatı hesapla
             }
         }
     }
@@ -95,16 +111,17 @@ else
         if (Siparis.Id == 0)
         {
             await _siparisrepository.CreateAsync(Siparis);
-            await _JS.InvokeVoidAsync("alert", "Yeni sipariş eklendi!");
+            await _JS.ToastrSuccess( "Yeni sipariş eklendi!");
         }
         else
         {
             await _siparisrepository.UpdateAsync(Siparis);
-            await _JS.InvokeVoidAsync("alert", "Sipariş güncellendi!");
+            await _JS.ToastrSuccess( "Sipariş güncellendi!");
         }
 
         IsProcessing = false;
         _navigationManager.NavigateTo("/siparis");
+
     }
 
     private void OnProductSelected(ChangeEventArgs e)
@@ -114,6 +131,17 @@ else
         if (selectedValues != null)
         {
             SelectedProductIds = selectedValues.Select(v => int.Parse(v.ToString())).ToList();
+            CalculateTotalPrice(); // Seçim değiştiğinde toplam fiyatı güncelle
+            Siparis.Siparis_tutar = TotalPrice;
         }
+    }
+
+    private void CalculateTotalPrice()
+    {
+        // Seçili ürünlerin fiyatlarını topla
+        TotalPrice = _products
+            .Where(p => SelectedProductIds.Contains(p.Id))
+            .Sum(p => p.Price);
+            
     }
 }
