@@ -1,0 +1,123 @@
+﻿@page "/Siparis"
+@inject ISiparisRepository _SiparisRepository
+@inject IJSRuntime _JS
+
+
+
+<BsModal OnModalConfirmation="ConfirmDelete_Click" ButtonBootstrapStyle="btn-danger" ButtonText="Delete" Title="Kategoriyi silmek istediğinize emin misiniz ?"></BsModal>
+@if (IsProcessing)
+{
+    <div class="vh-100  w-30 h-30 d-flex flex-column align-items-center justify-content-center">
+        <img src="/lib/bootstrap/images/loading.gif" alt="loading" />
+    </div>
+}
+else
+{
+    <div class="card shadow border-0 mt-4">
+        <div class="card-header bg-black bg-gradient m-lg-0 py-3">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <h2 class="text-white py-2">Category List</h2>
+                </div>
+            </div>
+
+        </div>
+        <div class="card-body p-4">
+            <div class="row pb-3">
+                <div class="col-12 text-end">
+                    <a href="/siparis/create" class="btn btn-lg btn-secondary " style="width:250px">
+                        <i class="bi bi-plus-circle"></i>  Yeni Siparis ekle
+                    </a>
+                </div>
+            </div>
+            @if (siparis.Any())
+            {
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>
+                                Adı
+                            </th>
+                            <th>
+
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var obj in siparis)
+                        {
+                            <tr>
+                                <td>
+                                    @obj.ProductIds
+                                </td>
+                                <td>
+                                    <a href="@($"/category/update/{obj.Id}")" class="btn btn-primary">
+                                        <i class="bi bi-pencil-square"></i> Düzenle
+                                    </a>
+                                    <button class="btn btn-danger" @onclick="()=>HandleDelete(obj.Id)">
+                                        <i class="bi bi-trash-fill"></i> Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+
+        </div>
+    </div>
+}
+@code {
+    private bool IsProcessing { get; set; } = true;
+    private IEnumerable<Siparis> siparis { get; set; } = new List<Siparis>();
+    private int DeleteSiparisID { get; set; } = 0;
+
+
+
+
+
+
+
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadCategories();
+            IsProcessing = false;
+            StateHasChanged();
+
+        }
+        // return base.OnAfterRenderAsync(firstRender);
+    }
+    private async Task LoadCategories()
+    {
+
+        siparis = await _SiparisRepository.GetAllAsync();
+    }
+
+    private void HandleDelete(int id)
+    {
+        DeleteSiparisID = id;
+        _JS.InvokeVoidAsync("ShowConfirmationModal");
+    }
+    private async Task ConfirmDelete_Click(bool isConfirmed)
+    {
+        IsProcessing = true;
+        await _JS.InvokeVoidAsync("HideConfirmationModal");
+        if (isConfirmed && DeleteSiparisID != 0)
+        {
+            var result = await _SiparisRepository.DeleteAsync(DeleteSiparisID);
+            if (result)
+                _JS?.ToastrSuccess("Siparis silme işlemi başarılı");
+            else
+                _JS?.ToastrError("Siparis silme işlemi başarısız");
+
+            await LoadCategories();
+        }
+        DeleteSiparisID = 0;
+        IsProcessing = false;
+    }
+
+}

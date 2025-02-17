@@ -1,0 +1,119 @@
+﻿@page "/siparis/create"
+@page "/siparis/update/{id:int}"
+@inject ISiparisRepository _siparisrepository
+@inject IProductRepository _productrepository
+@inject IJSRuntime _JS
+@inject NavigationManager _navigationManager
+@inject IWebHostEnvironment _webHostEnvironment
+
+@if (IsProcessing)
+{
+    <div class="position-absolute w-75 h-75 d-flex flex-column align-items-center bg-white justify-content-center">
+        <img src="/images/loading.gif" alt="loading" />
+    </div>
+}
+else
+{
+    <div class="card shadow border-0 m-4">
+        <div class="card-header bg-black bg-gradient ml-0 py-3">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <h2 class="text-white py-2">@(Id == 0 ? "Create" : "Update") Sipariş</h2>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-4">
+            <EditForm Model="Siparis" OnValidSubmit="UpsertSiparis">
+                <DataAnnotationsValidator />
+                <div class="border p-3 mt-4">
+                    <div class="form-floating py-3 col-12">
+                        <select multiple class="form-select" @onchange="OnProductSelected">
+                            @foreach (var product in _products)
+                            {
+                                <option value="@product.Id" selected="@SelectedProductIds.Contains(product.Id)">
+                                    @product.Name
+                                </option>
+                            }
+                        </select>
+                        <label for="Product">Ürün</label>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-6 col-md-3">
+                            <button type="submit" class="btn btn-primary form-control" disabled="@IsProcessing">
+                                <i class="bi bi-floppy2-fill"></i> @(Id == 0 ? "Create" : "Update")
+                            </button>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <a href="/siparis" class="btn btn-secondary form-control">
+                                <i class="bi bi-arrow-bar-left"></i> Back to List
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Siparis Siparis { get; set; } = new Siparis();
+    private IEnumerable<Product> _products = new List<Product>();
+    private List<int> SelectedProductIds { get; set; } = new List<int>();
+    private bool IsProcessing { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSiparisAndProductList();
+    }
+
+    private async Task LoadSiparisAndProductList()
+    {
+        _products = await _productrepository.GetAllAsync();
+
+        if (Id > 0)
+        {
+            Siparis = await _siparisrepository.GetAsync(Id);
+            // Mevcut siparişin seçili ürünlerini listeye ekle
+            if (Siparis.ProductIds != null)
+            {
+                SelectedProductIds = new List<int>(Siparis.ProductIds);
+            }
+        }
+    }
+
+    private async Task UpsertSiparis()
+    {
+        IsProcessing = true;
+
+        // Seçili ürünleri sipariş nesnesine ekle
+        Siparis.ProductIds = new List<int>(SelectedProductIds);
+
+        if (Siparis.Id == 0)
+        {
+            await _siparisrepository.CreateAsync(Siparis);
+            await _JS.InvokeVoidAsync("alert", "Yeni sipariş eklendi!");
+        }
+        else
+        {
+            await _siparisrepository.UpdateAsync(Siparis);
+            await _JS.InvokeVoidAsync("alert", "Sipariş güncellendi!");
+        }
+
+        IsProcessing = false;
+        _navigationManager.NavigateTo("/siparis");
+    }
+
+    private void OnProductSelected(ChangeEventArgs e)
+    {
+        var selectedValues = e.Value as IEnumerable<object>;
+
+        if (selectedValues != null)
+        {
+            SelectedProductIds = selectedValues.Select(v => int.Parse(v.ToString())).ToList();
+        }
+    }
+}

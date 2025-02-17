@@ -7,6 +7,7 @@ namespace Restoran_Vakifbank.Data
     {
         public DbSet<Category> Category { get; set; }
         public DbSet<Product> Product { get; set; }
+        public DbSet<Siparis> Siparis{ get;  set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
