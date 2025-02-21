@@ -9,15 +9,13 @@ namespace Restoran_Vakifbank.Data
         [Range(0, 11)]
         public int Masa_no { get; set; }
         public bool Aktif { get; set; } = true;
-
         public bool Odendi { get; set; } = false;
         [ForeignKey("ProductId")]
         public List<int> ProductIds { get; set; } = new List<int>();
-
-
-
         public decimal Siparis_tutar { get; set; }
-
-
+        [ForeignKey("MasaId")]
+        
+        public int MasaId { get; set; } // Yeni eklenen alan
+        public Masa Masa { get; set; } // Navigation Property
     }
 }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Restoran_Vakifbank.Data;
 
@@ -11,9 +12,11 @@ using Restoran_Vakifbank.Data;
 namespace Restoran_Vakifbank.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250219123909_UpdateMasaConnection")]
+    partial class UpdateMasaConnection
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -234,7 +237,7 @@ namespace Restoran_Vakifbank.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Category", (string)null);
+                    b.ToTable("Category");
 
                     b.HasData(
                         new
@@ -266,15 +269,12 @@ namespace Restoran_Vakifbank.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Masa_no")
-                        .HasColumnType("int");
-
                     b.Property<decimal>("Toplam_Tutar")
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Masa", (string)null);
+                    b.ToTable("Masa");
                 });
 
             modelBuilder.Entity("Restoran_Vakifbank.Data.Product", b =>
@@ -308,7 +308,7 @@ namespace Restoran_Vakifbank.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Product", (string)null);
+                    b.ToTable("Product");
                 });
 
             modelBuilder.Entity("Restoran_Vakifbank.Data.Siparis", b =>
@@ -322,7 +322,7 @@ namespace Restoran_Vakifbank.Migrations
                     b.Property<bool>("Aktif")
                         .HasColumnType("bit");
 
-                    b.Property<int>("MasaId")
+                    b.Property<int?>("MasaId")
                         .HasColumnType("int");
 
                     b.Property<int>("Masa_no")
@@ -342,7 +342,7 @@ namespace Restoran_Vakifbank.Migrations
 
                     b.HasIndex("MasaId");
 
-                    b.ToTable("Siparis", (string)null);
+                    b.ToTable("Siparis");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -409,18 +409,14 @@ namespace Restoran_Vakifbank.Migrations
 
             modelBuilder.Entity("Restoran_Vakifbank.Data.Siparis", b =>
                 {
-                    b.HasOne("Restoran_Vakifbank.Data.Masa", "Masa")
-                        .WithMany("Siparisler")
-                        .HasForeignKey("MasaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Masa");
+                    b.HasOne("Restoran_Vakifbank.Data.Masa", null)
+                        .WithMany("Siparis")
+                        .HasForeignKey("MasaId");
                 });
 
             modelBuilder.Entity("Restoran_Vakifbank.Data.Masa", b =>
                 {
-                    b.Navigation("Siparisler");
+                    b.Navigation("Siparis");
                 });
 #pragma warning restore 612, 618
         }

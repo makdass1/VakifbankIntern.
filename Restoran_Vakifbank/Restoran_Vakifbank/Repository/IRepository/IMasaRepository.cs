@@ -8,6 +8,8 @@ namespace Restoran_Vakifbank.Repository.IRepository
         public Task <Masa> UpdateAsync(Masa obj);
         public Task <bool> DeleteAsync(int obj);
         public Task <Masa> GetAsync(int id);
+        public Task<IEnumerable<Masa>> GetAllWithSiparisAsync();
         public Task <IEnumerable<Masa>> GetAllAsync();
+        public  Task<Masa> GetByMasaNoAsync(int masaNo);
     }
 }

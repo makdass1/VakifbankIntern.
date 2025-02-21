@@ -10,7 +10,7 @@ namespace Restoran_Vakifbank.Repository
         public CategoryRepository(ApplicationDbContext db)
         {
             _db = db;
-        }
+        }                                    
         public async Task<Category> CreateAsync(Category obj)
         {
             await   _db.Category.AddAsync(obj);

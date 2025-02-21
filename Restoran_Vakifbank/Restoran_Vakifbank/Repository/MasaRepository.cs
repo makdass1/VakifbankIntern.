@@ -38,7 +38,14 @@ namespace Restoran_Vakifbank.Repository
             }
             return obj;
         }
-
+        public async Task<Masa> GetByMasaNoAsync(int masaNo)
+        {
+            return await _db.Masa.FirstOrDefaultAsync(m => m.Masa_no == masaNo);
+        }
+        public async Task<IEnumerable<Masa>> GetAllWithSiparisAsync()
+        {
+            return await _db.Masa.Include(m => m.Siparisler).ToListAsync();
+        }
         public async Task <IEnumerable<Masa>> GetAllAsync()
         {
             return await _db.Masa.ToListAsync();

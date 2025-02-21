@@ -19,6 +19,10 @@ namespace Restoran_Vakifbank.Repository
             return obj;
         }
 
+        public async Task<Siparis?> GetByMasaNoAsync(int masaNo)
+        {
+            return await _db.Siparis.FirstOrDefaultAsync(s => s.Masa_no == masaNo && !s.Odendi);
+        }
         public async Task<bool> DeleteAsync(int id)
         {
             var obj = await _db.Siparis.FirstOrDefaultAsync(u => u.Id == id);

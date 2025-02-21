@@ -10,7 +10,10 @@ namespace Restoran_Vakifbank.Repository.IRepository
         public Task<Siparis> GetAsync(int id);
         public Task<IEnumerable<Siparis>> GetAllAsync();
 
-
+        
+        
+        public   Task<Siparis?> GetByMasaNoAsync(int masaNo);
+        
 
     }
 }

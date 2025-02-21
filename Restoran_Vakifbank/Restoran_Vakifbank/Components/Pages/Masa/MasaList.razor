@@ -1,1 +1,135 @@
-﻿
+﻿@page "/Masalar"
+@inject IMasaRepository MasaRepository
+
+<h3 class="text-center">Masa Durumları</h3>
+
+<div class="container text-center">
+    <div class="row row-cols-2 row-cols-lg-5 g-2 g-lg-3">
+        @foreach (var masa in Masalar)
+        {
+            <div class="col">
+                <button class="masa-btn @(masa.Doluluk == "Dolu" ? "dolu" : "bos")" @onclick="() => ShowMasaDetail(masa.Id)">
+                    <div class="p-3">Masa @masa.Masa_no</div>
+                    <div class="p-3">@(masa.Doluluk == "Dolu" ? "Dolu" : "Boş")</div>
+                    <div class="p-3">Tutar: @masa.Toplam_Tutar.ToString("C")</div>
+                </button>
+            </div>
+        }
+    </div>
+</div>
+
+@if (isMasaDetailVisible)
+{
+    <div class="masa-detail-modal">
+        <h4>Masa @selectedMasa.Masa_no</h4>
+        <p>Durum: @(selectedMasa.Doluluk == "Dolu" ? "Dolu" : "Boş")</p>
+        <p>Toplam Tutar: @selectedMasa.Toplam_Tutar.ToString("C")</p>
+        <button @onclick="CloseMasaDetail">Geri Dön</button>
+        <button @onclick="Ode">Öde</button>
+    </div>
+}
+
+@code {
+    private List<Masa> Masalar = new List<Masa>();
+    private bool isMasaDetailVisible = false;
+    private Masa selectedMasa = new Masa();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetMasalarAsync();
+    }
+
+    private async Task GetMasalarAsync()
+    {
+        Masalar = (await MasaRepository.GetAllAsync()).ToList();
+
+    }
+
+    private async Task ShowMasaDetail(int masaId)
+    {
+        selectedMasa = await MasaRepository.GetAsync(masaId);
+        isMasaDetailVisible = true;
+        if (selectedMasa.Toplam_Tutar!=0){
+            selectedMasa.Doluluk = "Dolu";
+        }
+    }
+
+    private void CloseMasaDetail()
+    {
+        isMasaDetailVisible = false;
+    }
+
+    private async Task Ode()
+    {
+        if (selectedMasa != null)
+        {
+            selectedMasa.Doluluk = "Boş";
+            selectedMasa.Toplam_Tutar = 0;
+
+            await MasaRepository.UpdateAsync(selectedMasa);
+            await GetMasalarAsync(); // Güncellenmiş veriyi al
+            
+
+            CloseMasaDetail();
+        }
+    }
+}
+
+
+<style>
+    .masa-btn {
+        padding: 20px;
+        font-size: 18px;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 10px;
+        width: 100%;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+        .masa-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+    .bos {
+        background-color: #28a745; /* Yeşil renk (boş Masalar) */
+    }
+
+    .dolu {
+        background-color: #dc3545; /* Kırmızı renk (dolu Masalar) */
+    }
+
+    .masa-detail-modal {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: rgba(0, 0, 0, 0.9);
+        padding: 30px;
+        color: white;
+        border-radius: 15px;
+        z-index: 100;
+        text-align: center;
+    }
+
+        .masa-detail-modal h4 {
+            margin-bottom: 20px;
+        }
+
+        .masa-detail-modal button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #ff5733;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+            .masa-detail-modal button:hover {
+                background-color: #cc4629;
+            }
+</style>
